@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2f6fed">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Dashboard de Notas</title>
+<style>
+:root{--bg:#f5f6f8;--card:#fff;--tx:#1d2330;--mut:#6b7385;--bd:#e2e5ec;--ac:#2f6fed;--ok:#18a34a;--hi:#2f6fed;--mid:#c58a00;--low:#e0362b;--warn:#fde047;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14171d;--card:#1d222b;--tx:#e8ebf2;--mut:#98a1b3;--bd:#2c3340;--ac:#6b9bff;--ok:#3ec878;--hi:#6b9bff;--mid:#facc15;--low:#ff6b5e;--warn:#a98d0c}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#14171d;--card:#1d222b;--tx:#e8ebf2;--mut:#98a1b3;--bd:#2c3340;--ac:#6b9bff;--ok:#3ec878;--hi:#6b9bff;--mid:#facc15;--low:#ff6b5e;--warn:#a98d0c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1100px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0}.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--bd);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:none;color:var(--mut);padding:10px 14px;font:inherit;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap}
+.tabs button.on{color:var(--ac);border-color:var(--ac);font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;align-items:center}
+input,select,textarea{padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit;min-width:0}
+.bar input[type=search]{flex:1 1 160px}
+button.b,.seg button{border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:8px 12px;border-radius:8px;font:inherit;cursor:pointer}
+button.b.p{background:var(--ac);border-color:var(--ac);color:#fff}button.b.d{color:var(--low)}
+.seg{display:flex;border-radius:8px;overflow:hidden}.seg button{border-radius:0}.seg button.on{background:var(--ac);color:#fff}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:14px}
+.k,.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.k{margin:0}.k b{display:block;font-size:24px}.k span,.mut,small{color:var(--mut);font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;cursor:pointer;display:flex;gap:10px;align-items:center}.c:hover{border-color:var(--ac)}
+.av{width:52px;height:52px;border-radius:50%;background:var(--bd);color:var(--mut);display:flex;align-items:center;justify-content:center;font-weight:700;flex:none;background-size:cover;background-position:center}
+.av.s{width:34px;height:34px;font-size:12px}.av.l{width:72px;height:72px;font-size:22px}
+.nm{font-size:13px;font-weight:600;line-height:1.25}.g{font-size:20px;font-weight:700}
+.hi{color:var(--hi)}.mid{color:var(--mid)}.low{color:var(--low)}
+.tw{overflow-x:auto;background:var(--card);border:1px solid var(--bd);border-radius:12px;margin-bottom:10px}
+table{border-collapse:collapse;width:100%}th,td{padding:7px 9px;text-align:center;border-bottom:1px solid var(--bd);font-size:13px}
+th{color:var(--mut);font-weight:600;white-space:nowrap}td:first-child,th:first-child{text-align:left}
+tr.r{cursor:pointer}tr.r:hover{background:var(--bg)}
+.row{display:flex;align-items:center;gap:8px}
+td input{width:100%;min-width:60px}td input.n{width:70px;text-align:center}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.chip{border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:20px;padding:6px 12px;font:inherit;cursor:pointer}.chip.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.empty{padding:30px;text-align:center;color:var(--mut)}
+.pa{width:100%;border:0;border-radius:6px;padding:6px 2px;font-weight:700;cursor:pointer;min-width:34px;background:var(--ok);color:#fff}.pa.f{background:var(--low);color:#fff}.pa.j{background:#f59e0b;color:#1d2330}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);width:min(560px,94vw);padding:16px}dialog::backdrop{background:#0008}
+.x{margin-left:auto;border:0;background:none;color:var(--mut);font-size:22px;cursor:pointer}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:10px;display:none;z-index:9}
+textarea{width:100%;min-height:110px}
+.auth-box{max-width:380px;margin:60px auto;text-align:center}
+</style>
+<!-- SDKs do Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<div class="w">
+<div class="top">
+  <h1>Dashboard de Notas <small id="status-sync">· nuvem</small></h1>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <select id="mat" onchange="S.mat=this.value;render()"><option value="ef">Educação Física</option><option value="xd">Xadrez</option></select>
+    <button id="btn-logout" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="logout()">Sair</button>
+  </div>
+</div>
+<div class="tabs" id="tabs"></div>
+<div id="app"><div class="empty">Verificando autenticação…</div></div>
+</div>
+<dialog id="dlg"></dialog><input type="file" id="file" accept="image/*" hidden><div id="toast"></div>
+<datalist id="tl"></datalist>
+<script>
+// =========================================================================
+// COLE AQUI A CONFIGURAÇÃO DO SEU PROJETO FIREBASE:
+const firebaseConfig = {
+  apiKey: "AIzaSyCXFgQJC82ALuYGkvV7hd4fkPz7oi4BSDA",
+  authDomain: "notas-escola.firebaseapp.com",
+  projectId: "notas-escola",
+  storageBucket: "notas-escola.firebasestorage.app",
+  messagingSenderId: "440826814470",
+  appId: "1:440826814470:web:2782c7ad823dfea63a6387"
+};
+// =========================================================================
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const firestore = firebase.firestore();
+// Ativa cache offline automático do Firestore (funciona sem internet no celular e sincroniza depois)
+firestore.enablePersistence({synchronizeTabs: true}).catch(()=>{});
+
+const MAT={ef:"Educação Física",xd:"Xadrez"};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const f=n=>n==null?"–":n.toFixed(2).replace(".",",");
+const cl=n=>n==null?"":n>=8?"hi":n>=7?"mid":"low";
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+const num=x=>typeof x=="number";
+const mx=x=>{const v=(x||[]).filter(num);return v.length?Math.max(...v):null};
+const ini=n=>n.split(" ").filter(w=>w.length>2).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fD=d=>d.slice(8)+"/"+d.slice(5,7)+" "+["dom","seg","ter","qua","qui","sex","sáb"][new Date(d+"T12:00").getDay()];
+
+let A={},V={},C={},user=null,unsubs=[],target=null;
+const S={tab:"p",mat:"ef",tri:"3",turma:"",q:"",faixa:"",ord:"n",view:"c",at:"3",aid:null,nv:false,del:null};
+
+function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
+
+// Referência isolada por usuário: users/{uid}/{colecao}/{docId}
+const userCol = c => firestore.collection("users").doc(user.uid).collection(c);
+const wr=async(c,id,d)=>{try{await userCol(c).doc(id).set(d)}catch(e){toast("Erro ao salvar: "+(e.message||e.code))}};
+const rm=async(c,id)=>{try{await userCol(c).doc(id).delete()}catch(e){toast("Erro ao excluir")}};
+
+const set=(k,v)=>{S[k]=v;render()};
+const sel=(k,o)=>`<select onchange="set('${k}',this.value)">${o.map(([v,l])=>`<option value="${esc(v)}"${S[k]==v?" selected":""}>${esc(l)}</option>`).join("")}</select>`;
+const turmas=()=>[...new Set(Object.values(A).map(a=>a.turma||"Sem turma"))].sort();
+const alunos=t=>Object.entries(A).filter(([,a])=>!t||(a.turma||"Sem turma")==t).sort((x,y)=>x[1].nome.localeCompare(y[1].nome));
+const avs=(mat,t)=>Object.entries(V).filter(([,a])=>a.mat==mat&&a.tri==t).sort((x,y)=>(x[1].data||"").localeCompare(y[1].data||""));
+const triAvg=(id,t,mat=S.mat)=>avg(avs(mat,t).map(([,a])=>mx((a.notas||{})[id])).filter(n=>n!=null));
+const mf=id=>{const v=[1,2,3].map(t=>triAvg(id,t)).filter(n=>n!=null);return [avg(v),v.length?v.reduce((x,y)=>x+y,0):null]};
+const nota=id=>+S.tri?triAvg(id,+S.tri):avg([1,2,3].map(t=>triAvg(id,t)).filter(n=>n!=null));
+const freq=id=>{const l=Object.values(C).filter(c=>c.mat==S.mat&&c.p&&c.p[id]);return l.length?100*l.filter(c=>c.p[id]=="P").length/l.length:null};
+const avt=(id,sm="")=>A[id]&&A[id].foto?`<div class="av ${sm}" style="background-image:url(${A[id].foto})"></div>`:`<div class="av ${sm}">${ini(A[id].nome)}</div>`;
+const bars=it=>it.map(([l,v])=>`<div class="row" style="margin:6px 0"><span style="width:110px;font-size:12px;color:var(--mut)">${l}</span><div style="flex:1;background:var(--bd);border-radius:6px;height:16px"><div style="width:${v==null?0:v*10}%;height:100%;border-radius:6px;background:var(--${v==null||v>=8?"hi":v>=7?"mid":"low"})"></div></div><b style="width:44px;text-align:right">${f(v)}</b></div>`).join("");
+
+function login(){
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(e => toast("Erro no login: " + e.message));
+}
+function logout(){
+  unsubs.forEach(u=>u());unsubs=[];
+  auth.signOut();
+}
+
+function render(){
+ $("mat").value=S.mat;
+ if(!user){
+   $("tabs").innerHTML="";
+   $("btn-logout").style.display="none";
+   $("mat").style.display="none";
+   $("app").innerHTML=`<div class="panel auth-box"><h2>Acesso Restrito</h2><p class="mut" style="margin-bottom:20px">Faça login com sua conta Google para acessar e sincronizar suas notas entre o computador e o celular.</p><button class="b p" style="width:100%;padding:12px;font-weight:600" onclick="login()">Entrar com Google</button></div>`;
+   return;
+ }
+ $("btn-logout").style.display="inline-block";
+ $("mat").style.display="inline-block";
+ $("tabs").innerHTML=[["p","Painel"],["a","Alunos"],["v","Avaliações"],["c","Chamada"],["i","Importar"],["b","Backup"]].map(([k,l])=>`<button class="${S.tab==k?"on":""}" onclick="set('tab','${k}')">${l}</button>`).join("");
+ $("tl").innerHTML=turmas().map(t=>`<option value="${esc(t)}">`).join("");
+ $("app").innerHTML=({p:pPanel,a:aPanel,v:vPanel,c:cPanel,i:iPanel,b:bPanel})[S.tab]();
+ if(S.tab=="p")paint();
+}
+
+/* ---------- PAINEL ---------- */
+function pPanel(){
+ return `<div class="bar">${sel("tri",[["3","3º trimestre"],["2","2º trimestre"],["1","1º trimestre"],["0","Média dos trimestres"]])}${sel("turma",[["","Todas as turmas"],...turmas().map(t=>[t,t])])}${sel("faixa",[["","Todas as notas"],["a","8,0 ou mais"],["b","7,0 a 7,99"],["c","Abaixo de 7,0"]])}${sel("ord",[["n","Ordem alfabética"],["d","Maior nota"],["u","Menor nota"]])}<input type="search" placeholder="Buscar aluno…" value="${esc(S.q)}" oninput="S.q=this.value;paint()"><div class="seg"><button class="${S.view=="c"?"on":""}" onclick="set('view','c')">Cartões</button><button class="${S.view=="t"?"on":""}" onclick="set('view','t')">Tabela</button></div></div><div id="out"></div>`;
+}
+function paint(){
+ const q=S.q.toLowerCase();
+ let r=alunos(S.turma).filter(([id,a])=>{const g=nota(id);return a.nome.toLowerCase().includes(q)&&(!S.faixa||g!=null&&(S.faixa=="a"?g>=8:S.faixa=="b"?g>=7&&g<8:g<7))});
+ const o=S.ord,gv=id=>nota(id)??-1;
+ if(o=="d")r.sort((x,y)=>gv(y[0])-gv(x[0]));if(o=="u")r.sort((x,y)=>gv(x[0])-gv(y[0]));
+ if(!Object.keys(A).length){$("out").innerHTML='<div class="empty">Nenhum aluno ainda. Vá na aba <b>Alunos</b> para cadastrar ou importe sua planilha/backup.</div>';return}
+ const g=r.map(([id])=>nota(id)).filter(n=>n!=null);
+ let h=`<div class="kpis"><div class="k"><b>${r.length}</b><span>alunos</span></div><div class="k"><b class="${cl(avg(g))}">${f(avg(g))}</b><span>média do grupo</span></div><div class="k"><b>${f(g.length?Math.max(...g):null)}</b><span>maior nota</span></div><div class="k"><b>${f(g.length?Math.min(...g):null)}</b><span>menor nota</span></div><div class="k"><b class="${g.some(x=>x<7)?"low":"hi"}">${g.filter(x=>x<7).length}</b><span>abaixo de 7,0</span></div></div>`;
+ h+=`<div class="panel"><div class="mut" style="margin-bottom:6px">Média por trimestre · ${MAT[S.mat]}</div>${bars([1,2,3].map(t=>[t+"º trimestre",avg(r.map(([id])=>triAvg(id,t)).filter(n=>n!=null))]))}</div>`;
+ if(!r.length)h+='<div class="empty">Nenhum aluno com esses filtros.</div>';
+ else if(S.view=="c")h+='<div class="grid">'+r.map(([id,a])=>{const n=nota(id),fq=freq(id);return `<div class="c" onclick="openP('${id}')">${avt(id)}<div><div class="nm">${esc(a.nome)}</div><div class="g ${n==null?"":cl(n)}">${f(n)}</div><small>${fq==null?"":"freq. "+Math.round(fq)+"%"}</small></div></div>`}).join("")+"</div>";
+ else{const L=+S.tri?avs(S.mat,+S.tri):[];h+=`<div class="tw"><table><thead><tr><th>Aluno</th><th>1º tri</th><th>2º tri</th><th>3º tri</th><th>Média final</th><th>Soma</th>${L.map(([,a])=>`<th>${esc(a.nome)}</th>`).join("")}<th>Freq.</th></tr></thead><tbody>`+r.map(([id,a])=>`<tr class="r" onclick="openP('${id}')"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(a.nome)}</span></div></td>${[1,2,3].map(t=>{const v=triAvg(id,t);return `<td class="${v==null?"":cl(v)}"><b>${f(v)}</b></td>`}).join("")}${(()=>{const [m,s]=mf(id);return `<td class="${cl(m)}"><b>${f(m)}</b></td><td>${f(s)}</td>`})()}${L.map(([,x])=>`<td>${f(mx((x.notas||{})[id]))}</td>`).join("")}<td>${freq(id)==null?"–":Math.round(freq(id))+"%"}</td></tr>`).join("")+"</tbody></table></div>"}
+ $("out").innerHTML=h;
+}
+function openP(id){
+ const a=A[id],t=[1,2,3].map(x=>triAvg(id,x)),fq=freq(id);
+ const pts=t.map((y,i)=>y==null?null:[40+i*120,110-y*9,y,i]).filter(Boolean);
+ let h=`<div class="row" style="margin-bottom:10px"><div onclick="pick('${id}')" style="cursor:pointer">${avt(id,"l")}</div><div><div class="nm" style="font-size:16px">${esc(a.nome)}</div><small>${esc(a.turma||"Sem turma")} · ${MAT[S.mat]} · toque na foto para trocar${fq==null?"":" · frequência "+Math.round(fq)+"%"}</small></div><button class="x" onclick="$('dlg').close()">×</button></div>`;
+ h+=`<svg viewBox="0 0 320 130" style="width:100%"><polyline points="${pts.map(p=>p[0]+","+p[1]).join(" ")}" fill="none" stroke="var(--ac)" stroke-width="3"/>${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--ac)"/><text x="${p[0]}" y="${p[1]-10}" text-anchor="middle" font-size="12" fill="var(--tx)">${f(p[2])}</text>`).join("")}${[0,1,2].map(i=>`<text x="${40+i*120}" y="126" text-anchor="middle" font-size="11" fill="var(--mut)">${i+1}º tri</text>`).join("")}</svg>`;
+ {const [m,s]=mf(id);h+=`<p>Média final: <b class="${cl(m)}">${f(m)}</b> · Soma dos trimestres: <b>${f(s)}</b></p>`}
+ h+=`<div class="tw"><table><thead><tr><th>Avaliação</th><th>Nota</th><th>Rec.</th><th>Final</th></tr></thead><tbody>`+[1,2,3].flatMap(tr=>avs(S.mat,tr).map(([,x])=>{const n=(x.notas||{})[id]||[];return `<tr><td>${tr}º · ${esc(x.nome)}</td><td>${f(n[0])}</td><td>${f(n[1])}</td><td><b class="${mx(n)==null?"":cl(mx(n))}">${f(mx(n))}</b></td></tr>`})).join("")+"</tbody></table></div>";
+ $("dlg").innerHTML=h;$("dlg").showModal();
+}
+
+/* ---------- ALUNOS ---------- */
+function aPanel(){
+ const L=alunos(""),ts=turmas();if(!ts.includes(S.bt))S.bt=ts[0];
+ return `<div class="panel"><b>Novo aluno</b><div class="bar" style="margin:8px 0 0"><input id="nn" placeholder="Nome completo" style="flex:2 1 200px"><input id="nt" list="tl" placeholder="Turma" style="flex:1 1 120px"><button class="b p" onclick="addA()">Adicionar</button></div></div>
+ <div class="panel"><b>Adicionar em lote</b><p class="mut" style="margin:4px 0 8px">Cole um aluno por linha. Pode colar direto do Excel/Planilhas (nome e turma em colunas) ou usar <code>Nome;Turma</code>.</p><textarea id="bt" placeholder="Ana Souza&#10;Bruno Lima;Turma 2"></textarea><div class="bar" style="margin:8px 0 0"><input id="bd" list="tl" placeholder="Turma padrão (se a linha não tiver)"><button class="b p" onclick="batchA()">Adicionar lote</button></div></div>
+ <div class="panel"><b>Excluir em lote</b><p class="mut" style="margin:4px 0 8px">Remove os alunos junto com as notas e a chamada deles. Não dá para desfazer.</p><div class="bar" style="margin:0"><select onchange="S.bt=this.value;S.del=null;render()">${ts.map(t=>`<option value="${esc(t)}"${S.bt==t?" selected":""}>${esc(t)}</option>`).join("")}</select><button class="b d" onclick="delT()">${S.del=="T"?"Confirmar: excluir turma":"Excluir turma"}</button><button class="b d" style="margin-left:auto" onclick="delAll()">${S.del=="ALL"?"Confirmar: excluir TODOS":"Excluir todos os alunos"}</button></div></div>
+ <div class="tw"><table><thead><tr><th>Foto / Nome</th><th>Turma</th><th></th></tr></thead><tbody>${L.map(([id,a])=>`<tr><td><div class="row"><div onclick="pick('${id}')" style="cursor:pointer">${avt(id,"s")}</div><input value="${esc(a.nome)}" onchange="upA('${id}','nome',this.value)"></div></td><td><input list="tl" value="${esc(a.turma||"")}" onchange="upA('${id}','turma',this.value)"></td><td><button class="b d" onclick="delA('${id}')">${S.del==id?"Confirmar?":"Excluir"}</button></td></tr>`).join("")||'<tr><td colspan=3 class="empty">Nenhum aluno.</td></tr>'}</tbody></table></div>`;
+}
+async function addA(){const n=$("nn").value.trim();if(!n)return;await wr("alunos",uid(),{nome:n,turma:$("nt").value.trim()});toast("Aluno adicionado")}
+async function batchA(){
+ const have=new Set(Object.values(A).map(a=>a.nome.toLowerCase()));let c=0;
+ const batch = firestore.batch();
+ for(const ln of $("bt").value.split("\n")){
+   const [n,t]=ln.split(/[;\t]/).map(s=>s.trim());
+   if(!n||have.has(n.toLowerCase()))continue;
+   have.add(n.toLowerCase());
+   batch.set(userCol("alunos").doc(uid()), {nome:n,turma:t||$("bd").value.trim()});
+   c++;
+ }
+ if(c>0) await batch.commit();
+ $("bt").value="";toast(c+" aluno(s) adicionado(s)");
+}
+const upA=(id,k,v)=>{v=v.trim();if(k=="nome"&&!v)return render();wr("alunos",id,{...A[id],[k]:v})};
+async function delA(id){if(S.del!=id){S.del=id;return render()}S.del=null;await rm("alunos",id)}
+async function bulkDel(ids,t){
+ const batch = firestore.batch();
+ for(const id of ids) batch.delete(userCol("alunos").doc(id));
+ for(const [id,c] of Object.entries(C)) if(t==null||c.turma==t) batch.delete(userCol("chamada").doc(id));
+ for(const [id,a] of Object.entries(V)){
+  if(t==null||a.turma==t) batch.delete(userCol("aval").doc(id));
+  else{const nn={...(a.notas||{})};let ch=false;ids.forEach(k=>{if(nn[k]){delete nn[k];ch=true}});if(ch)batch.set(userCol("aval").doc(id),{...a,notas:nn})}
+ }
+ await batch.commit();
+ toast("Exclusão concluída");
+}
+async function delT(){if(S.del!="T"){S.del="T";return render()}S.del=null;await bulkDel(alunos(S.bt).map(([id])=>id),S.bt)}
+async function delAll(){if(S.del!="ALL"){S.del="ALL";return render()}S.del=null;await bulkDel(Object.keys(A),null)}
+const pick=id=>{target=id;$("file").click()};
+$("file").onchange=e=>{const fl=e.target.files[0];if(!fl||!target)return;const id=target,im=new Image();
+ im.onload=()=>{const c=document.createElement("canvas");c.width=c.height=120;const k=Math.min(im.width,im.height);c.getContext("2d").drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,120,120);wr("alunos",id,{...A[id],foto:c.toDataURL("image/jpeg",.7)});$("dlg").close()};
+ im.src=URL.createObjectURL(fl);e.target.value=""};
+
+/* ---------- AVALIAÇÕES ---------- */
+function vPanel(){
+ const L=avs(S.mat,+S.at).filter(([,x])=>!S.turma||!x.turma||x.turma==S.turma),a=V[S.aid];
+ let h=`<div class="bar">${sel("at",[["1","1º trimestre"],["2","2º trimestre"],["3","3º trimestre"]])}${sel("turma",[["","Todas as turmas"],...turmas().map(t=>[t,t])])}<button class="b p" onclick="S.nv=true;render()">+ Nova avaliação</button></div>`;
+ if(S.nv)h+=`<div class="panel"><b>Nova avaliação · ${MAT[S.mat]} · ${S.at}º tri</b><div class="bar" style="margin:8px 0 0"><input id="vn" placeholder="Nome (ex.: Atletismo)" style="flex:2 1 200px"><input id="vd" type="date"><button class="b p" onclick="newV()">Criar</button><button class="b" onclick="S.nv=false;render()">Cancelar</button></div></div>`;
+ h+=`<div class="chips">${L.map(([id,x])=>`<button class="chip ${id==S.aid?"on":""}" onclick="set('aid','${id}')">${esc(x.nome)}${x.data?" · "+x.data.slice(8)+"/"+x.data.slice(5,7):""}</button>`).join("")||'<span class="mut">Nenhuma avaliação neste trimestre.</span>'}</div>`;
+ if(a&&a.mat==S.mat&&a.tri==S.at){
+  h+=`<div class="panel"><div class="bar" style="margin:0 0 8px"><input id="vnn" value="${esc(a.nome)}" style="flex:1 1 200px"><input id="vdd" type="date" value="${a.data||""}"><button class="b p" onclick="saveV()">Salvar notas</button><button class="b d" onclick="delV()">${S.del==S.aid?"Confirmar?":"Excluir"}</button></div><small>A nota final é calculada automaticamente: a maior entre a nota e a recuperação.</small></div>
+  <div class="tw"><table><thead><tr><th>Aluno</th><th>Nota</th><th>Rec.</th><th>Final</th></tr></thead><tbody>${alunos(S.turma).map(([id,s])=>{const x=(a.notas||{})[id]||[];return `<tr data-id="${id}"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(s.nome)}</span></div></td><td><input class="n" inputmode="decimal" value="${x[0]??""}" oninput="updF('${id}')"></td><td><input class="n" inputmode="decimal" value="${x[1]??""}" oninput="updF('${id}')"></td><td id="f_${id}"><b>${f(mx(x))}</b></td></tr>`}).join("")||'<tr><td colspan=4 class="empty">Nenhum aluno.</td></tr>'}</tbody></table></div>`;
+ }
+ return h;
+}
+const pn=s=>{s=s.trim().replace(",",".");return s===""?null:parseFloat(s)};
+const rowVals=tr=>[...tr.querySelectorAll("input")].map(i=>pn(i.value));
+function updF(id){const tr=document.querySelector(`tr[data-id="${id}"]`);$("f_"+id).innerHTML="<b>"+f(mx(rowVals(tr)))+"</b>"}
+async function newV(){const n=$("vn").value.trim();if(!n)return toast("Dê um nome à avaliação");const id=uid();S.nv=false;S.aid=id;await wr("aval",id,{mat:S.mat,tri:+S.at,nome:n,data:$("vd").value,notas:{}})}
+async function saveV(){
+ const a=V[S.aid],notas={...(a.notas||{})};
+ for(const tr of document.querySelectorAll("tr[data-id]")){const v=rowVals(tr);if(v.some(x=>x!=null&&(isNaN(x)||x<0||x>10)))return toast("Notas devem estar entre 0 e 10");if(v[0]==null&&v[1]==null)delete notas[tr.dataset.id];else notas[tr.dataset.id]=v}
+ await wr("aval",S.aid,{...a,nome:$("vnn").value.trim()||a.nome,data:$("vdd").value,notas});toast("Notas salvas")
+}
+async function delV(){if(S.del!=S.aid){S.del=S.aid;return render()}const id=S.aid;S.del=null;S.aid=null;await rm("aval",id)}
+
+/* ---------- CHAMADA ---------- */
+function cPanel(){
+ const ts=turmas();if(!ts.length)return '<div class="empty">Cadastre alunos primeiro.</div>';
+ if(!ts.includes(S.turma))S.turma=ts[0];
+ const L=Object.entries(C).filter(([,c])=>c.mat==S.mat&&c.turma==S.turma).sort((x,y)=>x[1].data.localeCompare(y[1].data));
+ const st=alunos(S.turma);
+ let h=`<div class="bar">${sel("turma",ts.map(t=>[t,t]))}<input id="cd" type="date" value="${new Date().toISOString().slice(0,10)}"><button class="b p" onclick="addC()">+ Adicionar dia</button></div><small>Toque na célula: 1× = F (falta, vermelho), 2× = FJ (falta justificada, laranja), 3× = volta para P (presença).</small><div class="tw" style="margin-top:8px"><table><thead><tr><th>Aluno</th>${L.map(([id,c])=>`<th>${fD(c.data)}<br><a href="#" onclick="delC('${id}');return false" style="color:var(--low);font-weight:400">${S.del==id?"confirmar?":"✕"}</a></th>`).join("")}<th>Freq.</th></tr></thead><tbody>`;
+ h+=st.map(([id,s])=>{const ps=L.map(([,c])=>c.p&&c.p[id]).filter(Boolean),fq=ps.length?Math.round(100*ps.filter(x=>x=="P").length/ps.length)+"%":"–";return `<tr><td><span class="nm">${esc(s.nome)}</span></td>${L.map(([cid,c])=>{const v=c.p&&c.p[id];return `<td><button class="pa ${v=="F"||v=="A"?"f":v=="J"?"j":""}" style="${v?"":"background:var(--bd);color:var(--mut)"}" onclick="togC('${cid}','${id}')">${v=="P"?"P":v=="J"?"FJ":v?"F":"–"}</button></td>`}).join("")}<td><b>${fq}</b></td></tr>`}).join("");
+ h+=`<tr><td><small>Faltas no dia</small></td>${L.map(([,c])=>`<td><small>${Object.entries(c.p||{}).filter(([k,v])=>v!="P"&&A[k]).length}</small></td>`).join("")}<td></td></tr></tbody></table></div>`;
+ return h+(L.length?"":'<div class="empty">Nenhum dia registrado para esta turma e matéria.</div>');
+}
+async function addC(){const d=$("cd").value;if(!d)return;const id=(S.mat+"_"+S.turma+"_"+d).replace(/[^a-zA-Z0-9_-]/g,"_");if(C[id])return toast("Esse dia já existe");const p={};alunos(S.turma).forEach(([k])=>p[k]="P");await wr("chamada",id,{mat:S.mat,turma:S.turma,data:d,p})}
+const togC=(cid,id)=>{const c=C[cid];wr("chamada",cid,{...c,p:{...c.p,[id]:{P:"F",F:"J",J:"P"}[(c.p&&c.p[id])=="A"?"F":c.p&&c.p[id]]||"P"}})};
+async function delC(id){if(S.del!=id){S.del=id;return render()}S.del=null;await rm("chamada",id)}
+
+/* ---------- IMPORTAR ---------- */
+let IMP=null;
+function csv(t){const R=[];let r=[],c="",q=false;for(let i=0;i<t.length;i++){const h=t[i];if(q){if(h=='"'){if(t[i+1]=='"'){c+='"';i++}else q=false}else c+=h}else if(h=='"')q=true;else if(h==","){r.push(c);c=""}else if(h=="\n"||h=="\r"){if(h=="\r"&&t[i+1]=="\n")i++;r.push(c);c="";R.push(r);r=[]}else c+=h}if(c||r.length){r.push(c);R.push(r)}return R}
+const slug=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").toLowerCase();
+const tc=s=>s.trim().toLowerCase().replace(/(^|\s)(\S)/g,(m,a,b)=>a+b.toUpperCase()).replace(/ (Da|De|Do|Das|Dos|E) /g,x=>x.toLowerCase());
+function parseCsv(t){
+ const R=csv(t),yr=new Date().getFullYear(),H=[0,1,2].map(i=>R[i]||[]),ES=[],AV=[],CH=[];
+ for(let i=3;i<R.length;i++){const n=(R[i][1]||"").trim();if(n)ES.push({row:i,nome:tc(n),turma:(R[i][2]||"").trim()})}
+ const tm=(ES.find(s=>s.turma)||{}).turma||"";
+ ES.forEach(s=>{s.turma=s.turma||tm;s.id="s_"+slug(s.turma+" "+s.nome)});
+ H[1].forEach((x,j)=>{const m=/^(\d\d)\/(\d\d)$/.exec((x||"").trim());if(m)CH.push({j,data:`${yr}-${m[2]}-${m[1]}`})});
+ let sec=null;
+ for(let j=0;j<H[0].length;j++){
+  const m=/^(\d)º\s*Trimestre\s*-\s*(.+)$/i.exec((H[0][j]||"").trim());if(m)sec={tri:+m[1],mat:/xadrez/i.test(m[2])?"xd":"ef"};
+  const a=/^Avalia[çc][ãa]o\s*\d+\s*-\s*(.+)$/i.exec((H[1][j]||"").trim());
+  if(a&&sec){const d=/(\d\d)\/(\d\d)/.exec(H[2][j]||""),notas={};
+   ES.forEach(s=>{let n=pn(R[s.row][j]||""),r=pn(R[s.row][j+1]||"");if(isNaN(n))n=null;if(isNaN(r))r=null;if(n!=null||r!=null)notas[s.id]=[n,r]});
+   if(Object.keys(notas).length){const nm=a[1].trim();AV.push({...sec,nome:nm[0].toUpperCase()+nm.slice(1),data:d?`${yr}-${d[2]}-${d[1]}`:"",turma:tm,notas})}}}
+ const att=CH.map(c=>{const p={};ES.forEach(s=>{const v=(R[s.row][c.j]||"").trim().toUpperCase();if(v[0]=="P")p[s.id]="P";else if(/^(FJ|JUST)/.test(v))p[s.id]="J";else if(v[0]=="A"||v[0]=="F")p[s.id]="F"});return {...c,p}}).filter(c=>Object.keys(c.p).length);
+ return {ES,AV,CH:att,tm};
+}
+function readCsv(fl){if(!fl)return;const r=new FileReader();r.onload=()=>{IMP=parseCsv(String(r.result));render()};r.readAsText(fl,"UTF-8")}
+function iPanel(){
+ const P=IMP;
+ let h=`<div class="panel"><b>Importar planilha (CSV)</b><p class="mut" style="margin:4px 0 10px">No Google Planilhas: Arquivo → Fazer download → CSV (aba da turma). Lê alunos, turma, chamada e as avaliações de cada trimestre (nota e recuperação). Reimportar a mesma turma sobrescreve as notas e chamadas dela; fotos são mantidas.</p><input type="file" accept=".csv,text/csv" onchange="readCsv(this.files[0])"></div>`;
+ if(P){const ct={};P.AV.forEach(a=>{const k=MAT[a.mat]+" · "+a.tri+"º tri";ct[k]=(ct[k]||0)+1});
+  h+=`<div class="panel"><b>Prévia</b><ul><li>${P.ES.length} alunos · turma <b>${esc(P.tm||"(sem turma)")}</b></li><li>${P.CH.length} dias de chamada</li><li>${P.AV.length} avaliações: ${Object.entries(ct).map(([k,v])=>esc(k)+" ("+v+")").join("; ")||"nenhuma"}</li></ul><div class="bar"><span>Aplicar a chamada em:</span><label><input type="checkbox" id="ck_ef" checked> Educação Física</label><label><input type="checkbox" id="ck_xd" checked> Xadrez</label></div><button class="b p" onclick="doImport()">Importar agora</button></div>`}
+ return h;
+}
+async function doImport(){
+ const P=IMP,ms=["ef","xd"].filter(m=>$("ck_"+m).checked);
+ toast("Enviando dados para a nuvem…");
+ const batch = firestore.batch();
+ for(const s of P.ES) batch.set(userCol("alunos").doc(s.id),{...(A[s.id]||{}),nome:s.nome,turma:s.turma});
+ for(const a of P.AV) batch.set(userCol("aval").doc("v_"+slug(a.mat+a.tri+a.turma+a.nome)),{mat:a.mat,tri:a.tri,nome:a.nome,data:a.data,turma:a.turma,notas:a.notas});
+ for(const c of P.CH)for(const m of ms) batch.set(userCol("chamada").doc((m+"_"+P.tm+"_"+c.data).replace(/[^a-zA-Z0-9_-]/g,"_")),{mat:m,turma:P.tm,data:c.data,p:c.p});
+ await batch.commit();
+ toast("Importação concluída");S.turma=P.tm;S.tab="p";IMP=null;render();
+}
+
+/* ---------- BACKUP ---------- */
+function bPanel(){
+ return `<div class="panel"><b>Baixar backup</b><p class="mut" style="margin:4px 0 10px">Seus dados já ficam salvos automaticamente na nuvem (Firebase), mas você pode baixar uma cópia de segurança em JSON a qualquer momento.</p><button class="b p" onclick="expBk()">Baixar backup (.json)</button></div><div class="panel"><b>Restaurar backup (ou migrar versão offline)</b><p class="mut" style="margin:4px 0 10px">Importa o arquivo <code>.json</code> gerado na versão offline ou em backups anteriores direto para a nuvem.</p><input type="file" accept=".json,application/json" onchange="impBk(this.files[0])"></div>`;
+}
+function expBk(){const b=new Blob([JSON.stringify({alunos:A,aval:V,chamada:C})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-notas-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove()}
+function impBk(fl){
+  if(!fl)return;
+  const r=new FileReader();
+  r.onload=async ()=>{
+    try{
+      const o=JSON.parse(r.result);
+      if(!o.alunos)throw 0;
+      toast("Enviando backup para a nuvem…");
+      const batch = firestore.batch();
+      for(const [id,d] of Object.entries(o.alunos||{})) batch.set(userCol("alunos").doc(id), d);
+      for(const [id,d] of Object.entries(o.aval||{})) batch.set(userCol("aval").doc(id), d);
+      for(const [id,d] of Object.entries(o.chamada||{})) batch.set(userCol("chamada").doc(id), d);
+      await batch.commit();
+      toast("Backup sincronizado com sucesso!");
+    }catch(e){toast("Arquivo de backup inválido")}
+  };
+  r.readAsText(fl);
+}
+
+/* ---------- SINCRONIZAÇÃO EM TEMPO REAL ---------- */
+auth.onAuthStateChanged(u => {
+  user = u;
+  unsubs.forEach(fn => fn());
+  unsubs = [];
+  if (user) {
+    const sub = (col, tgt) => userCol(col).onSnapshot(s => {
+      const o = {};
+      s.docs.forEach(d => o[d.id] = d.data());
+      tgt(o);
+      if(document.activeElement && document.activeElement.tagName=="INPUT" && S.tab=="v" && S.aid && document.activeElement.classList.contains("n")) return;
+      render();
+    }, e => toast("Erro de sincronização: " + e.message));
+    unsubs.push(sub("alunos", o => A = o));
+    unsubs.push(sub("aval", o => V = o));
+    unsubs.push(sub("chamada", o => C = o));
+  }
+  render();
+});
+</script>
+</body>
+</html>
