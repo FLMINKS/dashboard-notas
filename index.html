@@ -71,12 +71,12 @@ textarea{width:100%;min-height:110px}
 // =========================================================================
 // COLE AQUI A CONFIGURAÇÃO DO SEU PROJETO FIREBASE:
 const firebaseConfig = {
-  apiKey: "AIzaSyCXFgQJC82ALuYGkvV7hd4fkPz7oi4BSDA",
-  authDomain: "notas-escola.firebaseapp.com",
-  projectId: "notas-escola",
-  storageBucket: "notas-escola.firebasestorage.app",
-  messagingSenderId: "440826814470",
-  appId: "1:440826814470:web:2782c7ad823dfea63a6387"
+  apiKey: "SUA_API_KEY_AQUI",
+  authDomain: "SEU_PROJETO.firebaseapp.com",
+  projectId: "SEU_PROJETO",
+  storageBucket: "SEU_PROJETO.appspot.com",
+  messagingSenderId: "000000000000",
+  appId: "1:000000000000:web:000000000000"
 };
 // =========================================================================
 
@@ -91,6 +91,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const f=n=>n==null?"–":n.toFixed(2).replace(".",",");
 const cl=n=>n==null?"":n>=8?"hi":n>=7?"mid":"low";
+const clSoma = s => s == null ? "" : s >= 21 ? "hi" : "low";
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const num=x=>typeof x=="number";
 const mx=x=>{const v=(x||[]).filter(num);return v.length?Math.max(...v):null};
@@ -161,7 +162,7 @@ function paint(){
  h+=`<div class="panel"><div class="mut" style="margin-bottom:6px">Média por trimestre · ${MAT[S.mat]}</div>${bars([1,2,3].map(t=>[t+"º trimestre",avg(r.map(([id])=>triAvg(id,t)).filter(n=>n!=null))]))}</div>`;
  if(!r.length)h+='<div class="empty">Nenhum aluno com esses filtros.</div>';
  else if(S.view=="c")h+='<div class="grid">'+r.map(([id,a])=>{const n=nota(id),fq=freq(id);return `<div class="c" onclick="openP('${id}')">${avt(id)}<div><div class="nm">${esc(a.nome)}</div><div class="g ${n==null?"":cl(n)}">${f(n)}</div><small>${fq==null?"":"freq. "+Math.round(fq)+"%"}</small></div></div>`}).join("")+"</div>";
- else{const L=+S.tri?avs(S.mat,+S.tri):[];h+=`<div class="tw"><table><thead><tr><th>Aluno</th><th>1º tri</th><th>2º tri</th><th>3º tri</th><th>Média final</th><th>Soma</th>${L.map(([,a])=>`<th>${esc(a.nome)}</th>`).join("")}<th>Freq.</th></tr></thead><tbody>`+r.map(([id,a])=>`<tr class="r" onclick="openP('${id}')"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(a.nome)}</span></div></td>${[1,2,3].map(t=>{const v=triAvg(id,t);return `<td class="${v==null?"":cl(v)}"><b>${f(v)}</b></td>`}).join("")}${(()=>{const [m,s]=mf(id);return `<td class="${cl(m)}"><b>${f(m)}</b></td><td>${f(s)}</td>`})()}${L.map(([,x])=>`<td>${f(mx((x.notas||{})[id]))}</td>`).join("")}<td>${freq(id)==null?"–":Math.round(freq(id))+"%"}</td></tr>`).join("")+"</tbody></table></div>"}
+ else{const L=+S.tri?avs(S.mat,+S.tri):[];h+=`<div class="tw"><table><thead><tr><th>Aluno</th><th>1º tri</th><th>2º tri</th><th>3º tri</th><th>Média final</th><th>Soma</th>${L.map(([,a])=>`<th>${esc(a.nome)}</th>`).join("")}<th>Freq.</th></tr></thead><tbody>`+r.map(([id,a])=>`<tr class="r" onclick="openP('${id}')"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(a.nome)}</span></div></td>${[1,2,3].map(t=>{const v=triAvg(id,t);return `<td class="${v==null?"":cl(v)}"><b>${f(v)}</b></td>`}).join("")}${(()=>{const (()=>{const [m,s]=mf(id);return `<td class="${cl(m)}"><b>${f(m)}</b></td><td class="${clSoma(s)}"><b>${f(s)}</b></td>`})()${L.map(([,x])=>`<td>${f(mx((x.notas||{})[id]))}</td>`).join("")}<td>${freq(id)==null?"–":Math.round(freq(id))+"%"}</td></tr>`).join("")+"</tbody></table></div>"}
  $("out").innerHTML=h;
 }
 function openP(id){
