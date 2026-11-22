@@ -282,7 +282,7 @@ function parseCsv(t){
 function readCsv(fl){if(!fl)return;const r=new FileReader();r.onload=()=>{IMP=parseCsv(String(r.result));render()};r.readAsText(fl,"UTF-8")}
 function iPanel(){
  const P=IMP;
- let h=`<div class="panel"><b>Importar planilha (CSV)</b><p class="mut" style="margin:4px 0 10px">No Google Planilhas: Arquivo → Fazer download → CSV (aba da turma). Lê alunos, turma, chamada e as avaliações de cada trimestre (nota e recuperação). Reimportar a mesma turma sobrescreve as notas e chamadas dela; fotos são mantidas.</p><input type="file" accept=".csv,text/csv" onchange="readCsv(this.files[0])"></div>`;
+ let h=`<div class="panel"><b>Importar planilha (CSV)</b><p class="mut" style="margin:4px 0 10px">No Google Planilhas: Arquivo → Fazer download → CSV (aba da turma). Lê alunos, turma, chamada e as avaliações de cada trimestre (nota e recuperação). Reimportar a mesma turma sobrescreve as notas e chamadas dela; fotos são mantidas.</p><input type="file" accept=".csv,text/csv" onchange="readCsv(this.files[0])"></div><div class="panel"><b>Importar fotos (JSON)</b><p class="mut" style="margin:4px 0 10px">Use os arquivos <code>fotos-...json</code> gerados pelo script da planilha. As fotos são ligadas aos alunos pelo nome. Importe o CSV antes.</p><input type="file" multiple accept=".json,application/json" onchange="impFotos(this.files)"></div>`;
  if(P){const ct={};P.AV.forEach(a=>{const k=MAT[a.mat]+" · "+a.tri+"º tri";ct[k]=(ct[k]||0)+1});
   h+=`<div class="panel"><b>Prévia</b><ul><li>${P.ES.length} alunos · turma <b>${esc(P.tm||"(sem turma)")}</b></li><li>${P.CH.length} dias de chamada</li><li>${P.AV.length} avaliações: ${Object.entries(ct).map(([k,v])=>esc(k)+" ("+v+")").join("; ")||"nenhuma"}</li></ul><div class="bar"><span>Aplicar a chamada em:</span><label><input type="checkbox" id="ck_ef" checked> Educação Física</label><label><input type="checkbox" id="ck_xd" checked> Xadrez</label></div><button class="b p" onclick="doImport()">Importar agora</button></div>`}
  return h;
@@ -298,7 +298,31 @@ async function doImport(){
  toast("Importação concluída");S.turma=P.tm;S.tab="p";IMP=null;render();
 }
 
-/* ---------- BACKUP ---------- */
+const loadImg=src=>new Promise((ok,no)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=no;im.src=src});
+async function impFotos(fls){
+ if(!fls||!fls.length)return;
+ try{
+  const idx={};Object.entries(A).forEach(([id,a])=>idx[slug(a.nome)]=id);
+  let batch=firestore.batch(),n=0,ok=0,sem=0;
+  toast("Processando fotos…");
+  for(const fl of fls){
+   const lista=JSON.parse(await fl.text());
+   for(const it of lista){
+    const id=idx[slug(it.nome||"")];
+    if(!id||!it.foto){sem++;continue}
+    const im=await loadImg(it.foto);
+    const c=document.createElement("canvas");c.width=c.height=120;
+    const k=Math.min(im.width,im.height);
+    c.getContext("2d").drawImage(im,(im.width-k)/2,(im.height-k)/2,k,k,0,0,120,120);
+    batch.set(userCol("alunos").doc(id),{...A[id],foto:c.toDataURL("image/jpeg",.7)});ok++;n++;
+    if(n>=400){await batch.commit();batch=firestore.batch();n=0}
+   }
+  }
+  if(n)await batch.commit();
+  toast(ok+" foto(s) importada(s)"+(sem?" · "+sem+" sem correspondência":""));
+ }catch(e){toast("Arquivo de fotos inválido")}
+}
+  /* ---------- BACKUP ---------- */
 function bPanel(){
  return `<div class="panel"><b>Baixar backup</b><p class="mut" style="margin:4px 0 10px">Seus dados já ficam salvos automaticamente na nuvem (Firebase), mas você pode baixar uma cópia de segurança em JSON a qualquer momento.</p><button class="b p" onclick="expBk()">Baixar backup (.json)</button></div><div class="panel"><b>Restaurar backup (ou migrar versão offline)</b><p class="mut" style="margin:4px 0 10px">Importa o arquivo <code>.json</code> gerado na versão offline ou em backups anteriores direto para a nuvem.</p><input type="file" accept=".json,application/json" onchange="impBk(this.files[0])"></div>`;
 }
