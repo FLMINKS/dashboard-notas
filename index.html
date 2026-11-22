@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f6fed">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Dashboard de Notas</title>
@@ -70,14 +71,23 @@ textarea{width:100%;min-height:110px}
 <script>
 // =========================================================================
 // COLE AQUI A CONFIGURAÇÃO DO SEU PROJETO FIREBASE:
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY_AQUI",
-  authDomain: "SEU_PROJETO.firebaseapp.com",
-  projectId: "SEU_PROJETO",
-  storageBucket: "SEU_PROJETO.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:000000000000"
+  apiKey: "AIzaSyCXFgQJC82ALuYGkvV7hd4fkPz7oi4BSDA",
+  authDomain: "notas-escola.firebaseapp.com",
+  projectId: "notas-escola",
+  storageBucket: "notas-escola.firebasestorage.app",
+  messagingSenderId: "440826814470",
+  appId: "1:440826814470:web:2782c7ad823dfea63a6387"
 };
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 // =========================================================================
 
 firebase.initializeApp(firebaseConfig);
@@ -91,7 +101,7 @@ const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const f=n=>n==null?"–":n.toFixed(2).replace(".",",");
 const cl=n=>n==null?"":n>=8?"hi":n>=7?"mid":"low";
-const clSoma = s => s == null ? "" : s >= 21 ? "hi" : "low";
+const clSoma=s=>s==null?"":s>=21?"hi":"low";
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const num=x=>typeof x=="number";
 const mx=x=>{const v=(x||[]).filter(num);return v.length?Math.max(...v):null};
@@ -100,7 +110,7 @@ const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fD=d=>d.slice(8)+"/"+d.slice(5,7)+" "+["dom","seg","ter","qua","qui","sex","sáb"][new Date(d+"T12:00").getDay()];
 
 let A={},V={},C={},user=null,unsubs=[],target=null;
-const S={tab:"p",mat:"ef",tri:"3",turma:"",q:"",faixa:"",ord:"n",view:"c",at:"3",aid:null,nv:false,del:null};
+const S={tab:"p",mat:"ef",tri:"3",turma:"",q:"",faixa:"",ord:"n",view:"c",at:"3",aid:null,nv:false,del:null,bt:""};
 
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
 
@@ -162,7 +172,13 @@ function paint(){
  h+=`<div class="panel"><div class="mut" style="margin-bottom:6px">Média por trimestre · ${MAT[S.mat]}</div>${bars([1,2,3].map(t=>[t+"º trimestre",avg(r.map(([id])=>triAvg(id,t)).filter(n=>n!=null))]))}</div>`;
  if(!r.length)h+='<div class="empty">Nenhum aluno com esses filtros.</div>';
  else if(S.view=="c")h+='<div class="grid">'+r.map(([id,a])=>{const n=nota(id),fq=freq(id);return `<div class="c" onclick="openP('${id}')">${avt(id)}<div><div class="nm">${esc(a.nome)}</div><div class="g ${n==null?"":cl(n)}">${f(n)}</div><small>${fq==null?"":"freq. "+Math.round(fq)+"%"}</small></div></div>`}).join("")+"</div>";
- else{const L=+S.tri?avs(S.mat,+S.tri):[];h+=`<div class="tw"><table><thead><tr><th>Aluno</th><th>1º tri</th><th>2º tri</th><th>3º tri</th><th>Média final</th><th>Soma</th>${L.map(([,a])=>`<th>${esc(a.nome)}</th>`).join("")}<th>Freq.</th></tr></thead><tbody>`+r.map(([id,a])=>`<tr class="r" onclick="openP('${id}')"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(a.nome)}</span></div></td>${[1,2,3].map(t=>{const v=triAvg(id,t);return `<td class="${v==null?"":cl(v)}"><b>${f(v)}</b></td>`}).join("")}${(()=>{const (()=>{const [m,s]=mf(id);return `<td class="${cl(m)}"><b>${f(m)}</b></td><td class="${clSoma(s)}"><b>${f(s)}</b></td>`})()${L.map(([,x])=>`<td>${f(mx((x.notas||{})[id]))}</td>`).join("")}<td>${freq(id)==null?"–":Math.round(freq(id))+"%"}</td></tr>`).join("")+"</tbody></table></div>"}
+ else{
+  const L=+S.tri?avs(S.mat,+S.tri):[];
+  h+=`<div class="tw"><table><thead><tr><th>Aluno</th><th>1º tri</th><th>2º tri</th><th>3º tri</th><th>Média final</th><th>Soma</th>${L.map(([,a])=>`<th>${esc(a.nome)}</th>`).join("")}<th>Freq.</th></tr></thead><tbody>`+r.map(([id,a])=>{
+   const [m,s]=mf(id);
+   return `<tr class="r" onclick="openP('${id}')"><td><div class="row">${avt(id,"s")}<span class="nm">${esc(a.nome)}</span></div></td>${[1,2,3].map(t=>{const v=triAvg(id,t);return `<td class="${v==null?"":cl(v)}"><b>${f(v)}</b></td>`}).join("")}<td class="${cl(m)}"><b>${f(m)}</b></td><td class="${clSoma(s)}"><b>${f(s)}</b></td>${L.map(([,x])=>`<td>${f(mx((x.notas||{})[id]))}</td>`).join("")}<td>${freq(id)==null?"–":Math.round(freq(id))+"%"}</td></tr>`;
+  }).join("")+"</tbody></table></div>";
+ }
  $("out").innerHTML=h;
 }
 function openP(id){
@@ -170,14 +186,14 @@ function openP(id){
  const pts=t.map((y,i)=>y==null?null:[40+i*120,110-y*9,y,i]).filter(Boolean);
  let h=`<div class="row" style="margin-bottom:10px"><div onclick="pick('${id}')" style="cursor:pointer">${avt(id,"l")}</div><div><div class="nm" style="font-size:16px">${esc(a.nome)}</div><small>${esc(a.turma||"Sem turma")} · ${MAT[S.mat]} · toque na foto para trocar${fq==null?"":" · frequência "+Math.round(fq)+"%"}</small></div><button class="x" onclick="$('dlg').close()">×</button></div>`;
  h+=`<svg viewBox="0 0 320 130" style="width:100%"><polyline points="${pts.map(p=>p[0]+","+p[1]).join(" ")}" fill="none" stroke="var(--ac)" stroke-width="3"/>${pts.map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="5" fill="var(--ac)"/><text x="${p[0]}" y="${p[1]-10}" text-anchor="middle" font-size="12" fill="var(--tx)">${f(p[2])}</text>`).join("")}${[0,1,2].map(i=>`<text x="${40+i*120}" y="126" text-anchor="middle" font-size="11" fill="var(--mut)">${i+1}º tri</text>`).join("")}</svg>`;
- {const [m,s]=mf(id);h+=`<p>Média final: <b class="${cl(m)}">${f(m)}</b> · Soma dos trimestres: <b>${f(s)}</b></p>`}
+ {const [m,s]=mf(id);h+=`<p>Média final: <b class="${cl(m)}">${f(m)}</b> · Soma dos trimestres: <b class="${clSoma(s)}">${f(s)}</b></p>`}
  h+=`<div class="tw"><table><thead><tr><th>Avaliação</th><th>Nota</th><th>Rec.</th><th>Final</th></tr></thead><tbody>`+[1,2,3].flatMap(tr=>avs(S.mat,tr).map(([,x])=>{const n=(x.notas||{})[id]||[];return `<tr><td>${tr}º · ${esc(x.nome)}</td><td>${f(n[0])}</td><td>${f(n[1])}</td><td><b class="${mx(n)==null?"":cl(mx(n))}">${f(mx(n))}</b></td></tr>`})).join("")+"</tbody></table></div>";
  $("dlg").innerHTML=h;$("dlg").showModal();
 }
 
 /* ---------- ALUNOS ---------- */
 function aPanel(){
- const L=alunos(""),ts=turmas();if(!ts.includes(S.bt))S.bt=ts[0];
+ const L=alunos(""),ts=turmas();if(!ts.includes(S.bt))S.bt=ts[0]||"";
  return `<div class="panel"><b>Novo aluno</b><div class="bar" style="margin:8px 0 0"><input id="nn" placeholder="Nome completo" style="flex:2 1 200px"><input id="nt" list="tl" placeholder="Turma" style="flex:1 1 120px"><button class="b p" onclick="addA()">Adicionar</button></div></div>
  <div class="panel"><b>Adicionar em lote</b><p class="mut" style="margin:4px 0 8px">Cole um aluno por linha. Pode colar direto do Excel/Planilhas (nome e turma em colunas) ou usar <code>Nome;Turma</code>.</p><textarea id="bt" placeholder="Ana Souza&#10;Bruno Lima;Turma 2"></textarea><div class="bar" style="margin:8px 0 0"><input id="bd" list="tl" placeholder="Turma padrão (se a linha não tiver)"><button class="b p" onclick="batchA()">Adicionar lote</button></div></div>
  <div class="panel"><b>Excluir em lote</b><p class="mut" style="margin:4px 0 8px">Remove os alunos junto com as notas e a chamada deles. Não dá para desfazer.</p><div class="bar" style="margin:0"><select onchange="S.bt=this.value;S.del=null;render()">${ts.map(t=>`<option value="${esc(t)}"${S.bt==t?" selected":""}>${esc(t)}</option>`).join("")}</select><button class="b d" onclick="delT()">${S.del=="T"?"Confirmar: excluir turma":"Excluir turma"}</button><button class="b d" style="margin-left:auto" onclick="delAll()">${S.del=="ALL"?"Confirmar: excluir TODOS":"Excluir todos os alunos"}</button></div></div>
