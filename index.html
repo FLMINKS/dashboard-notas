@@ -51,6 +51,7 @@ textarea{width:100%;min-height:110px}
 .auth-box{max-width:380px;margin:60px auto;text-align:center}
 .soma-ok{color:#18a34a !important}
 .soma-baixo{color:#ef4444 !important}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;margin-top:10px}.sg label{display:flex;gap:6px;align-items:center;font-size:13px}
 </style>
 <!-- SDKs do Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -102,7 +103,7 @@ const ini=n=>n.split(" ").filter(w=>w.length>2).slice(0,2).map(w=>w[0]).join("")
 const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 const fD=d=>d.slice(8)+"/"+d.slice(5,7)+" "+["dom","seg","ter","qua","qui","sex","sáb"][new Date(d+"T12:00").getDay()];
 
-let A={},V={},C={},user=null,unsubs=[],target=null;
+let A={},V={},C={},HP={},user=null,unsubs=[],target=null;
 const S={tab:"p",mat:"ef",tri:"3",turma:"",q:"",faixa:"",ord:"n",view:"c",at:"3",aid:null,nv:false,del:null,arqFiltro:"ativos"};
 
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
@@ -119,11 +120,11 @@ const sel=(k,o)=>`<select onchange="set('${k}',this.value)">${o.map(([v,l])=>`<o
 const turmas=(incArq=false)=>[...new Set(Object.values(A).filter(a=>incArq||!isArq(a)).map(a=>a.turma||"Sem turma"))].sort();
 const alunos=(t,incArq=false)=>Object.entries(A).filter(([,a])=>(incArq||!isArq(a))&&(!t||(a.turma||"Sem turma")==t)).sort((x,y)=>x[1].nome.localeCompare(y[1].nome));
 
-const avs=(mat,t)=>Object.entries(V).filter(([,a])=>a.mat==mat&&a.tri==t).sort((x,y)=>(x[1].data||"").localeCompare(y[1].data||""));
+const avs=(mat,t)=>Object.entries(V).filter(([,a])=>a.mat==mat&&a.tri==t&&!a.enc).sort((x,y)=>(x[1].data||"").localeCompare(y[1].data||""));
 const triAvg=(id,t,mat=S.mat)=>avg(avs(mat,t).map(([,a])=>mx((a.notas||{})[id])).filter(n=>n!=null));
 const mf=id=>{const v=[1,2,3].map(t=>triAvg(id,t)).filter(n=>n!=null);return [avg(v),v.length?v.reduce((x,y)=>x+y,0):null]};
 const nota=id=>+S.tri?triAvg(id,+S.tri):avg([1,2,3].map(t=>triAvg(id,t)).filter(n=>n!=null));
-const freq=id=>{const l=Object.values(C).filter(c=>c.mat==S.mat&&c.p&&c.p[id]);return l.length?100*l.filter(c=>c.p[id]=="P").length/l.length:null};
+const freq=id=>{const l=Object.values(C).filter(c=>c.mat==S.mat&&c.p&&c.p[id]&&!c.enc);return l.length?100*l.filter(c=>c.p[id]=="P").length/l.length:null};
 const avt=(id,sm="")=>A[id]&&A[id].foto?`<div class="av ${sm}" style="background-image:url(${A[id].foto})"></div>`:`<div class="av ${sm}">${ini(A[id].nome)}</div>`;
 const bars=it=>it.map(([l,v])=>`<div class="row" style="margin:6px 0"><span style="width:110px;font-size:12px;color:var(--mut)">${l}</span><div style="flex:1;background:var(--bd);border-radius:6px;height:16px"><div style="width:${v==null?0:v*10}%;height:100%;border-radius:6px;background:var(--${v==null||v>=8?"hi":v>=7?"mid":"low"})"></div></div><b style="width:44px;text-align:right">${f(v)}</b></div>`).join("");
 
@@ -147,9 +148,9 @@ function render(){
  }
  $("btn-logout").style.display="inline-block";
  $("mat").style.display="inline-block";
- $("tabs").innerHTML=[["p","Painel"],["a","Alunos"],["v","Avaliações"],["c","Chamada"],["i","Importar"],["b","Backup"]].map(([k,l])=>`<button class="${S.tab==k?"on":""}" onclick="set('tab','${k}')">${l}</button>`).join("");
+ $("tabs").innerHTML=[["p","Painel"],["a","Alunos"],["v","Avaliações"],["c","Chamada"],["m","Avançar ano"],["i","Importar"],["b","Backup"]].map(([k,l])=>`<button class="${S.tab==k?"on":""}" onclick="set('tab','${k}')">${l}</button>`).join("");
  $("tl").innerHTML=turmas(true).map(t=>`<option value="${esc(t)}">`).join("");
- $("app").innerHTML=({p:pPanel,a:aPanel,v:vPanel,c:cPanel,i:iPanel,b:bPanel})[S.tab]();
+ $("app").innerHTML=({p:pPanel,a:aPanel,v:vPanel,c:cPanel,m:mPanel,i:iPanel,b:bPanel})[S.tab]();
  if(S.tab=="p")paint();
 }
 
@@ -276,7 +277,7 @@ async function delV(){if(S.del!=S.aid){S.del=S.aid;return render()}const id=S.ai
 function cPanel(){
  const ts=turmas();if(!ts.length)return '<div class="empty">Cadastre alunos ativos primeiro.</div>';
  if(!ts.includes(S.turma))S.turma=ts[0];
- const L=Object.entries(C).filter(([,c])=>c.mat==S.mat&&c.turma==S.turma).sort((x,y)=>x[1].data.localeCompare(y[1].data));
+ const L=Object.entries(C).filter(([,c])=>c.mat==S.mat&&c.turma==S.turma&&!c.enc).sort((x,y)=>x[1].data.localeCompare(y[1].data));
  const st=alunos(S.turma);
  let h=`<div class="bar">${sel("turma",ts.map(t=>[t,t]))}<input id="cd" type="date" value="${new Date().toISOString().slice(0,10)}"><button class="b p" onclick="addC()">+ Adicionar dia</button></div><small>Toque na célula: 1× = F (falta, vermelho), 2× = FJ (falta justificada, laranja), 3× = volta para P (presença).</small><div class="tw" style="margin-top:8px"><table><thead><tr><th>Aluno</th>${L.map(([id,c])=>`<th>${fD(c.data)}<br><a href="#" onclick="delC('${id}');return false" style="color:var(--low);font-weight:400">${S.del==id?"confirmar?":"✕"}</a></th>`).join("")}<th>Freq.</th></tr></thead><tbody>`;
  h+=st.map(([id,s])=>{const ps=L.map(([,c])=>c.p&&c.p[id]).filter(Boolean),fq=ps.length?Math.round(100*ps.filter(x=>x=="P").length/ps.length)+"%":"–";return `<tr><td><span class="nm">${esc(s.nome)}</span></td>${L.map(([cid,c])=>{const v=c.p&&c.p[id];return `<td><button class="pa ${v=="F"||v=="A"?"f":v=="J"?"j":""}" style="${v?"":"background:var(--bd);color:var(--mut)"}" onclick="togC('${cid}','${id}')">${v=="P"?"P":v=="J"?"FJ":v?"F":"–"}</button></td>`}).join("")}<td><b>${fq}</b></td></tr>`}).join("");
@@ -286,6 +287,95 @@ function cPanel(){
 async function addC(){const d=$("cd").value;if(!d)return;const id=(S.mat+"_"+S.turma+"_"+d).replace(/[^a-zA-Z0-9_-]/g,"_");if(C[id])return toast("Esse dia já existe");const p={};alunos(S.turma).forEach(([k])=>p[k]="P");await wr("chamada",id,{mat:S.mat,turma:S.turma,data:d,p})}
 const togC=(cid,id)=>{const c=C[cid];wr("chamada",cid,{...c,p:{...c.p,[id]:{P:"F",F:"J",J:"P"}[(c.p&&c.p[id])=="A"?"F":c.p&&c.p[id]]||"P"}})};
 async function delC(id){if(S.del!=id){S.del=id;return render()}S.del=null;await rm("chamada",id)}
+
+/* ---------- AVANÇAR ANO (promoção em lote) ---------- */
+const rs=()=>{const y=scrollY;render();scrollTo(0,y)};
+const pr=()=>S.pr||(S.pr={ano:String(new Date().getFullYear()),enc:true,acao:{},dest:{},rep:{},open:{}});
+const numT=t=>parseInt((/\d+/.exec(t)||["0"])[0]);
+const sugT=t=>/\d+/.test(t)?t.replace(/\d+/,numT(t)+1):"";
+const pAc=t=>pr().acao[t]??(numT(t)>=9?"f":"a");
+const pDe=t=>pr().dest[t]??sugT(t);
+const lastP=()=>Object.entries(HP).sort((x,y)=>y[1].ts-x[1].ts)[0];
+const commitOps=async ops=>{for(let i=0;i<ops.length;i+=400){const b=firestore.batch();ops.slice(i,i+400).forEach(o=>o(b));await b.commit()}};
+
+function pPlan(){
+ const P=pr(),mv=[],res=[];
+ for(const t of turmas().filter(t=>t!="Sem turma")){
+  const L=alunos(t),ac=pAc(t),de=pDe(t).trim(),rep=L.filter(([id])=>P.rep[id]).length;let n=0;
+  if(ac=="a"&&de&&de!=t)L.forEach(([id])=>{if(!P.rep[id]){mv.push({id,de:t,para:de});n++}});
+  else if(ac=="f")L.forEach(([id])=>{if(!P.rep[id]){mv.push({id,de:t,para:t,arq:1});n++}});
+  res.push({t,ac,de,tot:L.length,rep,n});
+ }
+ return {mv,res};
+}
+
+function mSum(){
+ const P=pr(),{mv,res}=pPlan(),n=mv.length;
+ const ln=res.map(r=>{
+  const rp=r.rep?` · ${r.rep} repete${r.rep>1?"m":""}`:"";
+  if(r.ac=="m")return `<li>${esc(r.t)}: todos ficam na turma</li>`;
+  if(r.ac=="f")return `<li>${esc(r.t)}: <b>${r.n}</b> concluem (arquivados)${rp}</li>`;
+  if(!r.de)return `<li class="low">${esc(r.t)}: informe a turma de destino</li>`;
+  if(r.de==r.t)return `<li>${esc(r.t)}: destino igual à turma atual, ninguém muda</li>`;
+  return `<li>${esc(r.t)} → <b>${esc(r.de)}</b>: ${r.n} avançam${rp}</li>`;
+ }).join("");
+ return `<b>Resumo</b><ul style="margin:6px 0 10px">${ln}</ul>${P.enc?'<p class="mut" style="margin:0 0 10px">As avaliações e chamadas atuais serão ocultadas (ficam salvas).</p>':""}<div class="bar" style="margin:0"><button class="b p" onclick="applyP()">${S.pc?`Confirmar: mover ${n} aluno(s)${P.enc?" e encerrar o ano":""}`:`Aplicar (${n} aluno${n==1?"":"s"})`}</button>${S.pc?'<button class="b" onclick="S.pc=false;rs()">Cancelar</button>':""}</div>`;
+}
+
+function mPanel(){
+ const P=pr(),{res}=pPlan(),hs=Object.entries(HP).sort((x,y)=>y[1].ts-x[1].ts);
+ if(!res.length)return '<div class="empty">Nenhum aluno ativo com turma. Cadastre alunos na aba <b>Alunos</b>.</div>';
+ const OP=[["a","Avançar para"],["m","Manter na turma"],["f","Concluir (arquivar)"]];
+ let h=`<div class="panel"><b>Avançar alunos de ano</b><p class="mut" style="margin:4px 0 10px">Escolha o destino de cada turma e marque só quem vai repetir: todos os outros avançam de uma vez. Nada é apagado e a última promoção pode ser desfeita.</p><div class="bar" style="margin:0"><label>Ano letivo que termina: <input value="${esc(P.ano)}" style="width:80px" oninput="pr().ano=this.value"></label><label style="display:flex;gap:6px;align-items:flex-start;flex:1 1 260px"><input type="checkbox" ${P.enc?"checked":""} onchange="pr().enc=this.checked;S.pc=false;$('msum').innerHTML=mSum()"><span>Encerrar o ano: oculta as avaliações e chamadas atuais de todas as turmas, para o novo ano começar zerado</span></label></div></div>`;
+ h+=res.map(r=>{const L=alunos(r.t);return `<div class="panel"><div class="bar" style="margin:0"><b style="min-width:90px">${esc(r.t)}</b><select data-t="${esc(r.t)}" onchange="pr().acao[this.dataset.t]=this.value;S.pc=false;rs()">${OP.map(([v,l])=>`<option value="${v}"${r.ac==v?" selected":""}>${l}</option>`).join("")}</select>${r.ac=="a"?`<input list="tl" data-t="${esc(r.t)}" value="${esc(r.de)}" placeholder="Turma de destino" oninput="pr().dest[this.dataset.t]=this.value;S.pc=false;$('msum').innerHTML=mSum()">`:""}<small style="margin-left:auto">${L.length} aluno(s)</small></div><details data-t="${esc(r.t)}" ${P.open[r.t]?"open":""} ontoggle="pr().open[this.dataset.t]=this.open" style="margin-top:8px"><summary class="mut" style="cursor:pointer">Marcar quem repete…</summary><div class="sg">${L.map(([id,a])=>`<label><input type="checkbox" ${P.rep[id]?"checked":""} onchange="togRep('${id}',this.checked)"> ${esc(a.nome)}</label>`).join("")}</div></details></div>`}).join("");
+ h+=`<div class="panel" id="msum">${mSum()}</div>`;
+ h+=`<div class="panel"><b>Promoções feitas</b>`+(hs.length?`<div class="tw" style="margin:8px 0 0"><table><thead><tr><th>Data</th><th>Ano</th><th>Alunos movidos</th><th></th></tr></thead><tbody>${hs.map(([id,p],i)=>`<tr><td>${new Date(p.ts).toLocaleDateString("pt-BR")}</td><td>${esc(p.ano)}${p.enc?'<span class="badge">ano encerrado</span>':""}</td><td>${p.moves.length}</td><td>${i==0?`<button class="b d" onclick="undoP()">${S.pu==id?"Confirmar: desfazer":"Desfazer"}</button>`:"<small>só a mais recente</small>"}</td></tr>`).join("")}</tbody></table></div><p class="mut" style="margin:8px 0 0">Desfazer devolve cada aluno à turma anterior e reexibe as avaliações e chamadas ocultas por aquela promoção. Alunos que você mudou de turma depois dela não são alterados.</p>`:'<p class="mut" style="margin:6px 0 0">Nenhuma ainda.</p>')+`</div>`;
+ return h;
+}
+const togRep=(id,v)=>{const P=pr();if(v)P.rep[id]=true;else delete P.rep[id];S.pc=false;$("msum").innerHTML=mSum()};
+
+async function applyP(){
+ const P=pr(),{mv,res}=pPlan(),bad=res.find(r=>r.ac=="a"&&!r.de);
+ if(bad)return toast("Informe o destino da turma "+bad.t);
+ if(!mv.length&&!P.enc)return toast("Nada para mudar");
+ if(!S.pc){S.pc=true;return $("msum").innerHTML=mSum()}
+ S.pc=false;
+ const pid=uid(),enc=!!P.enc;
+ try{
+  toast("Aplicando…");
+  await userCol("promocoes").doc(pid).set({ts:Date.now(),ano:P.ano.trim()||String(new Date().getFullYear()),enc,moves:mv});
+  const ops=mv.map(m=>b=>b.update(userCol("alunos").doc(m.id),m.arq?{arquivado:true}:{turma:m.para}));
+  if(enc){
+   Object.entries(V).forEach(([id,d])=>{if(!d.enc)ops.push(b=>b.update(userCol("aval").doc(id),{enc:pid}))});
+   Object.entries(C).forEach(([id,d])=>{if(!d.enc)ops.push(b=>b.update(userCol("chamada").doc(id),{enc:pid}))});
+  }
+  await commitOps(ops);
+  S.pr=null;S.turma="";render();
+  toast(mv.length+" aluno(s) atualizado(s)"+(enc?" · ano encerrado":""));
+ }catch(e){toast("Erro ao aplicar: "+(e.message||e.code))}
+}
+
+async function undoP(){
+ const u=lastP();if(!u)return;
+ const [pid,p]=u;
+ if(S.pu!=pid){S.pu=pid;return rs()}
+ S.pu=null;
+ try{
+  let skip=0;const ops=[],del=firebase.firestore.FieldValue.delete();
+  for(const m of p.moves){
+   const a=A[m.id],ref=userCol("alunos").doc(m.id);
+   if(!a){skip++;continue}
+   if(m.arq){if(isArq(a))ops.push(b=>b.update(ref,{arquivado:false}));else skip++}
+   else if((a.turma||"")==m.para)ops.push(b=>b.update(ref,{turma:m.de}));
+   else skip++;
+  }
+  Object.entries(V).forEach(([id,d])=>{if(d.enc==pid)ops.push(b=>b.update(userCol("aval").doc(id),{enc:del}))});
+  Object.entries(C).forEach(([id,d])=>{if(d.enc==pid)ops.push(b=>b.update(userCol("chamada").doc(id),{enc:del}))});
+  await commitOps(ops);
+  await userCol("promocoes").doc(pid).delete();
+  toast("Promoção desfeita"+(skip?` · ${skip} aluno(s) não alterado(s) por mudanças posteriores`:""));
+ }catch(e){toast("Erro ao desfazer: "+(e.message||e.code))}
+}
 
 /* ---------- IMPORTAR ---------- */
 let IMP=null;
@@ -392,6 +482,7 @@ auth.onAuthStateChanged(u => {
     unsubs.push(sub("alunos", o => A = o));
     unsubs.push(sub("aval", o => V = o));
     unsubs.push(sub("chamada", o => C = o));
+    unsubs.push(sub("promocoes", o => HP = o));
   }
   render();
 });
