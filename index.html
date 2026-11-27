@@ -4,8 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#2f6fed">
+<link rel="manifest" href="./manifest.webmanifest">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Notas">
 <title>Dashboard de Notas</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMyZjZmZWQiLz48cmVjdCB4PSIxNCIgeT0iMzQiIHdpZHRoPSI5IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iLjciLz48cmVjdCB4PSIyNy41IiB5PSIyNCIgd2lkdGg9IjkiIGhlaWdodD0iMjYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIuODUiLz48cmVjdCB4PSI0MSIgeT0iMTQiIHdpZHRoPSI5IiBoZWlnaHQ9IjM2IiByeD0iMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==">
 <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACnklEQVR4nO3cMU7cQABAUW+UMhISF4GjcIj0S80BqEmfQ3AULgISUg6QIg1K8qVdM8ss8nv9jEfy99iNZ3e1f17gf77MXgDnSxwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRykr7MXsAlPD5frBl7fvoxdyVF2ziE9qdVZvDUrEa+VExpSxsB5jiUOkjhOZezjPmXzEAdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRB2uKP1I93F+sG3ty/jl3JmdtWHKuzeDt8O4ls6LXyzjKGz3P+NhQHx9pKHGMf941sHluJgxXEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHaf7vkD++f1s3cP/z19iV8JeZcazO4u1wiZzOtNfKO8sYPg//8s1BmhPH2Mfd5nEidg6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7SnDjGnix7yGw3968Dr3jIbNe3LwOvOHa2A336nePjTzAe29khppSxTIxjyE09apIhN/WoSYbc1FllLMuyu9o/z7r2Hx9/MP7j3cW6gavzenq4XDdwYhnLOcTB2fr03xycjjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQO0m8mDE4pXFzDlgAAAABJRU5ErkJggg==">
@@ -56,15 +58,16 @@ textarea{width:100%;min-height:110px}
 .sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px 14px;margin-top:10px}.sg label{display:flex;gap:6px;align-items:center;font-size:13px}
 </style>
 <!-- SDKs do Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="./vendor/firebase-app-compat.js"></script>
+<script src="./vendor/firebase-auth-compat.js"></script>
+<script src="./vendor/firebase-firestore-compat.js"></script>
 </head>
 <body>
 <div class="w">
 <div class="top">
   <h1>Dashboard de Notas <small id="status-sync">· nuvem</small></h1>
   <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <button id="btn-install" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="installApp()">Instalar app</button>
     <select id="mat" onchange="S.mat=this.value;render()"><option value="ef">Educação Física</option><option value="xd">Xadrez</option></select>
     <button id="btn-logout" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="logout()">Sair</button>
   </div>
@@ -90,7 +93,15 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const firestore = firebase.firestore();
-firestore.enablePersistence({synchronizeTabs: true}).catch(()=>{});
+const persistenceReady=firestore.enablePersistence({synchronizeTabs:true}).then(()=>{
+ offlinePersistence=true;
+ updateSyncStatus();
+},e=>{
+ offlinePersistence=false;
+ console.error("Persistência offline do Firestore indisponível:",e);
+ updateSyncStatus();
+ toast("Cache offline indisponível: "+(e.message||e.code));
+});
 
 const MAT={ef:"Educação Física",xd:"Xadrez"};
 const $=id=>document.getElementById(id);
@@ -109,6 +120,46 @@ let A={},V={},C={},HP={},user=null,unsubs=[],target=null;
 const S={tab:"p",mat:"ef",tri:"3",turma:"",q:"",faixa:"",ord:"n",view:"c",at:"3",aid:null,nv:false,del:null,arqFiltro:"ativos"};
 
 function toast(m){const t=$("toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
+
+let installPrompt=null,offlinePersistence=null;
+const pendingSync=new Set();
+function updateSyncStatus(){
+ const el=$("status-sync");if(!el)return;
+ if(!navigator.onLine){
+   el.textContent=offlinePersistence===false?"· offline · cache indisponível":"· offline · dados neste aparelho";
+ }else if(pendingSync.size){
+   el.textContent="· sincronizando alterações";
+ }else if(offlinePersistence===false){
+   el.textContent="· online · cache offline indisponível";
+ }else{
+   el.textContent="· online";
+ }
+}
+window.addEventListener("online",updateSyncStatus);
+window.addEventListener("offline",updateSyncStatus);
+window.addEventListener("beforeinstallprompt",e=>{
+ e.preventDefault();
+ installPrompt=e;
+ $("btn-install").style.display="inline-block";
+});
+window.addEventListener("appinstalled",()=>{
+ installPrompt=null;
+ $("btn-install").style.display="none";
+ toast("Aplicativo instalado");
+});
+async function installApp(){
+ if(!installPrompt)return;
+ installPrompt.prompt();
+ await installPrompt.userChoice;
+ installPrompt=null;
+ $("btn-install").style.display="none";
+}
+if("serviceWorker" in navigator){
+ navigator.serviceWorker.register("./service-worker.js").catch(e=>{
+  console.error("Falha ao registrar o modo offline:",e);
+  toast("Não foi possível ativar o modo offline. Abra o programa por um endereço HTTPS.");
+ });
+}
 
 const userCol = c => firestore.collection("users").doc(user.uid).collection(c);
 const wr=async(c,id,d)=>{try{await userCol(c).doc(id).set(d)}catch(e){toast("Erro ao salvar: "+(e.message||e.code))}};
@@ -500,7 +551,7 @@ async function impFotos(fls){
 
 /* ---------- BACKUP ---------- */
 function bPanel(){
- return `<div class="panel"><b>Baixar backup</b><p class="mut" style="margin:4px 0 10px">Seus dados já ficam salvos automaticamente na nuvem (Firebase), mas você pode baixar uma cópia de segurança em JSON a qualquer momento.</p><button class="b p" onclick="expBk()">Baixar backup (.json)</button></div><div class="panel"><b>Restaurar backup (ou migrar versão offline)</b><p class="mut" style="margin:4px 0 10px">Importa o arquivo <code>.json</code> gerado na versão offline ou em backups anteriores direto para a nuvem.</p><input type="file" accept=".json,application/json" onchange="impBk(this.files[0])"></div>`;
+ return `<div class="panel"><b>Usar sem internet</b><p class="mut" style="margin:4px 0 10px">Instale este aplicativo no computador ou celular enquanto estiver online e abra-o pelo menos uma vez com sua conta Google. Depois, ele abre sem internet e guarda as alterações neste aparelho; quando a conexão voltar, o Firebase sincroniza automaticamente.</p><p class="mut">No computador/Android, use <b>Instalar app</b> ou a opção de instalação do navegador. No iPhone/iPad, use Compartilhar → Adicionar à Tela de Início. A primeira instalação e o primeiro login precisam de internet. Alterações feitas offline em aparelhos diferentes só se encontram quando ambos sincronizarem; se editarem o mesmo dado, prevalece a última gravação.</p></div><div class="panel"><b>Baixar backup</b><p class="mut" style="margin:4px 0 10px">Seus dados já ficam salvos automaticamente na nuvem (Firebase), mas você pode baixar uma cópia de segurança em JSON a qualquer momento.</p><button class="b p" onclick="expBk()">Baixar backup (.json)</button></div><div class="panel"><b>Restaurar backup (ou migrar versão offline)</b><p class="mut" style="margin:4px 0 10px">Importa o arquivo <code>.json</code> gerado na versão offline ou em backups anteriores direto para a nuvem.</p><input type="file" accept=".json,application/json" onchange="impBk(this.files[0])"></div>`;
 }
 function expBk(){const b=new Blob([JSON.stringify({alunos:A,aval:V,chamada:C})],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="backup-notas-"+new Date().toISOString().slice(0,10)+".json";document.body.appendChild(a);a.click();a.remove()}
 function impBk(fl){
@@ -523,12 +574,16 @@ function impBk(fl){
 }
 
 /* ---------- SINCRONIZAÇÃO EM TEMPO REAL ---------- */
-auth.onAuthStateChanged(u => {
+auth.onAuthStateChanged(async u => {
+  await persistenceReady;
   user = u;
   unsubs.forEach(fn => fn());
   unsubs = [];
+  pendingSync.clear();
   if (user) {
-    const sub = (col, tgt) => userCol(col).onSnapshot(s => {
+    const sub = (col, tgt) => userCol(col).onSnapshot({includeMetadataChanges:true},s => {
+      if(s.metadata.hasPendingWrites)pendingSync.add(col);else pendingSync.delete(col);
+      updateSyncStatus();
       const o = {};
       s.docs.forEach(d => o[d.id] = d.data());
       tgt(o);
@@ -540,6 +595,7 @@ auth.onAuthStateChanged(u => {
     unsubs.push(sub("chamada", o => C = o));
     unsubs.push(sub("promocoes", o => HP = o));
   }
+  updateSyncStatus();
   render();
 });
 </script>
