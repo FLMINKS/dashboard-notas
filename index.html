@@ -69,7 +69,8 @@ textarea{width:100%;min-height:110px}
   <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
     <button id="btn-install" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="installApp()">Instalar app</button>
     <select id="mat" onchange="S.mat=this.value;render()"><option value="ef">Educação Física</option><option value="xd">Xadrez</option></select>
-    <button id="btn-logout" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="logout()">Sair</button>
+    <small id="user-account" style="display:none;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></small>
+    <button id="btn-logout" class="b" style="display:none;font-size:12px;padding:6px 10px" onclick="logout()">Trocar conta</button>
   </div>
 </div>
 <div class="tabs" id="tabs"></div>
@@ -89,6 +90,11 @@ const firebaseConfig = {
   appId: "1:440826814470:web:2782c7ad823dfea63a6387"
 };
 // =========================================================================
+
+if(!window.firebase||typeof window.firebase.auth!="function"||typeof window.firebase.firestore!="function"){
+ document.getElementById("app").innerHTML='<div class="panel"><b>Não foi possível carregar o login</b><p class="mut">Os arquivos Firebase não foram encontrados. Publique a pasta <code>vendor</code> completa no GitHub, ao lado deste HTML, e recarregue a página.</p></div>';
+ throw new Error("SDKs Firebase ausentes. Verifique a pasta vendor/ publicada junto com o HTML.");
+}
 
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -193,11 +199,14 @@ function render(){
  $("mat").value=S.mat;
  if(!user){
    $("tabs").innerHTML="";
+   $("user-account").style.display="none";
    $("btn-logout").style.display="none";
    $("mat").style.display="none";
    $("app").innerHTML=`<div class="panel auth-box"><h2>Acesso Restrito</h2><p class="mut" style="margin-bottom:20px">Faça login com sua conta Google para acessar e sincronizar suas notas entre o computador e o celular.</p><button class="b p" style="width:100%;padding:12px;font-weight:600" onclick="login()">Entrar com Google</button></div>`;
    return;
  }
+ $("user-account").textContent=user.email||"Conta Google conectada";
+ $("user-account").style.display="inline-block";
  $("btn-logout").style.display="inline-block";
  $("mat").style.display="inline-block";
  $("tabs").innerHTML=[["p","Painel"],["a","Alunos"],["v","Avaliações"],["c","Chamada"],["m","Avançar ano"],["i","Importar"],["b","Backup"]].map(([k,l])=>`<button class="${S.tab==k?"on":""}" onclick="set('tab','${k}')">${l}</button>`).join("");
