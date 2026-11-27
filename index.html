@@ -7,6 +7,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Dashboard de Notas</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTQiIGZpbGw9IiMyZjZmZWQiLz48cmVjdCB4PSIxNCIgeT0iMzQiIHdpZHRoPSI5IiBoZWlnaHQ9IjE2IiByeD0iMiIgZmlsbD0iI2ZmZiIgb3BhY2l0eT0iLjciLz48cmVjdCB4PSIyNy41IiB5PSIyNCIgd2lkdGg9IjkiIGhlaWdodD0iMjYiIHJ4PSIyIiBmaWxsPSIjZmZmIiBvcGFjaXR5PSIuODUiLz48cmVjdCB4PSI0MSIgeT0iMTQiIHdpZHRoPSI5IiBoZWlnaHQ9IjM2IiByeD0iMiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==">
+<link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAIAAACyr5FlAAACnklEQVR4nO3cMU7cQABAUW+UMhISF4GjcIj0S80BqEmfQ3AULgISUg6QIg1K8qVdM8ss8nv9jEfy99iNZ3e1f17gf77MXgDnSxwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRykr7MXsAlPD5frBl7fvoxdyVF2ziE9qdVZvDUrEa+VExpSxsB5jiUOkjhOZezjPmXzEAdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRBEgdJHCRxkMRB2uKP1I93F+sG3ty/jl3JmdtWHKuzeDt8O4ls6LXyzjKGz3P+NhQHx9pKHGMf941sHluJgxXEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHSRwkcZDEQRIHaf7vkD++f1s3cP/z19iV8JeZcazO4u1wiZzOtNfKO8sYPg//8s1BmhPH2Mfd5nEidg6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA6SOEjiIImDJA7SnDjGnix7yGw3968Dr3jIbNe3LwOvOHa2A336nePjTzAe29khppSxTIxjyE09apIhN/WoSYbc1FllLMuyu9o/z7r2Hx9/MP7j3cW6gavzenq4XDdwYhnLOcTB2fr03xycjjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQOkjhI4iCJgyQO0m8mDE4pXFzDlgAAAABJRU5ErkJggg==">
 <style>
 :root{--bg:#f5f6f8;--card:#fff;--tx:#1d2330;--mut:#6b7385;--bd:#e2e5ec;--ac:#2f6fed;--ok:#18a34a;--hi:#2f6fed;--mid:#c58a00;--low:#e0362b;--warn:#fde047;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){color-scheme:dark;--bg:#14171d;--card:#1d222b;--tx:#e8ebf2;--mut:#98a1b3;--bd:#2c3340;--ac:#6b9bff;--ok:#3ec878;--hi:#6b9bff;--mid:#facc15;--low:#ff6b5e;--warn:#a98d0c}}
@@ -83,6 +85,7 @@ const firebaseConfig = {
   messagingSenderId: "440826814470",
   appId: "1:440826814470:web:2782c7ad823dfea63a6387"
 };
+
 // =========================================================================
 
 firebase.initializeApp(firebaseConfig);
